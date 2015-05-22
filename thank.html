@@ -7,7 +7,101 @@
   <link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
 	<meta charset="utf-8">
 	<title>thank you</title>
+	<script type="text/javascript">
+        function resize() {
+            var canvas = document.querySelector('#can');
+            canvas.width = window.innerWidth;
+            canvas.height = 700;
+        }
 
+        window.addEventListener('load', resize);
+        window.addEventListener('resize', resize);
+        var can, ctx,
+            canX = [], canY = [], bubble = [],
+            mouseIsDown = 0, len = 0;
+ 
+        function init() {
+            can = document.getElementById("can");
+            ctx = can.getContext("2d");
+ 
+            can.addEventListener("mousedown", mouseDown, false);
+            can.addEventListener("mousemove", mouseXY, false);
+            can.addEventListener("touchstart", touchDown, false);
+            can.addEventListener("touchend", touchUp, false);
+            can.addEventListener("touchmove", touchXY, false);
+ 
+            document.body.addEventListener("mouseup", mouseUp, false);
+            document.body.addEventListener("touchcancel", touchUp, false);
+            for (i = 0; i < 4; i++) {
+                bubble[i] = Math.floor(Math.random() * 700);
+            }
+            animate();
+        }
+ 
+        function mouseUp() {
+            mouseIsDown = 0;
+            mouseXY();
+        }
+ 
+        function mouseDown() {
+            mouseIsDown = 1;
+            mouseXY();
+        }
+ 
+        function touchDown() {
+            mouseIsDown = 1;
+            touchXY();
+        }
+ 
+        function touchUp(e) {
+            if (!e)
+                e = event;
+            len = e.targetTouches.length;
+        }
+ 
+        function mouseXY(e) {
+            if (!e)
+                e = event;
+            canX[0] = e.pageX - can.offsetLeft;
+            canY[0] = e.pageY - can.offsetTop;
+            len = 1;
+        }
+ 
+        function touchXY(e) {
+            if (!e)
+                e = event;
+            e.preventDefault();
+            len = e.targetTouches.length;
+            for (i = 0; i < len; i++) {
+                canX[i] = e.targetTouches[i].pageX - can.offsetLeft;
+                canY[i] = e.targetTouches[i].pageY - can.offsetTop;
+            }
+        }
+ 
+        function animate() {
+            ctx.fillStyle = "black";
+            ctx.clearRect(0,0, can.width, can.height);
+            // create a path for each bubble
+            for (i = 0; i < 4; i++) {
+                bubble[i]++;
+                if (bubble[i] >= can.height + 10)
+                    bubble[i] = -10;
+                var y = bubble[i];
+                var x = (i + 1) * 0.2 * ctx.canvas.width - 15;
+                ctx.beginPath();
+                ctx.rect(x, y, 30, 30);
+                ctx.closePath();
+                // test each extant touch to see if it is on the bubble
+                for (j = 0;j < len; j++) {
+                    if (ctx.isPointInPath(canX[j], canY[j]) && mouseIsDown)
+                        bubble[i] = -30;
+                }
+                ctx.stroke();
+                ctx.fill();
+            }
+            setTimeout(animate, 5);
+        }
+    </script>
 	<style>
 
 		* { 
@@ -33,15 +127,20 @@
 
 			font-size: 12px;
 		}
-
+		canvas {
+		    	position: fixed;
+		    	top: 0;
+		    }
 	</style>
 </head>
 
-<body>
+<body onload="init()">
 	<div>
 	<h1>Thank you!</h1>
 	<p>남겨주신 연락처로 최대한 빠른 연락 드리겠습니다</p>
 </div>
+<canvas id="can">
+    	</canvas>
 </body>
 
 </html>
